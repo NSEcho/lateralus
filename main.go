@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/XdaemonX/lateralus/config"
+	"github.com/XdaemonX/lateralus/util"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -24,4 +25,12 @@ func main() {
 
 	// Send emails
 	config.SMTPServer.SendMails(to, bodies, *cfg.From, *cfg.Subject)
+
+	// Write to file
+	var users, urls []string
+	for _, user := range cfg.Targets {
+		users = append(users, user.Name)
+		urls = append(urls, user.URL)
+	}
+	util.WriteToFile(users, urls)
 }

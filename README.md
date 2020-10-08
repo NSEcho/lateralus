@@ -42,7 +42,7 @@ Best regards,
 Targets needs to be in .csv format in format _Name_,_Email_ like so:
 ```
 John,john.doe@example.com
-Alan, alan.smith@example.com
+Alan,alan.smith@example.com
 ```
 
 ### Choosing URL mode
@@ -93,12 +93,14 @@ I will use two of my gmail accounts, one for sending, one for receiving. Targets
 __NOTE: I do not own accounts which are given below, they are just there to show how it should look like__
 
 File _templates/sample.com_:
+```
 Greetings {{.Name}},
 
 My resume is available at following url {{.URL}}
 
 Best regards,
 {{.AttackerName}}
+```
 
 File _targets.csv_:
 ```
