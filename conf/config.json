@@ -1,0 +1,14 @@
+{
+"singleUrl": false,
+"config": "",
+"template": "templates/sample.com",
+"targets": "targets.csv",
+"generateUrl": true,
+"generateLength": 10,
+"templateName": "",
+"attackerName": "Attacker Himself",
+"url": "https://www.example.com/?employeeID=<CHANGE>",
+"custom": "",
+"from": "Sample user",
+"subject": "this is test"
+}
