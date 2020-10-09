@@ -41,6 +41,9 @@ type Options struct {
 	SMTPConfig     *string `json:"smtpconfig"`
 	Subject        *string `json:"subject"`
 	From           *string `json:"from"`
+	Report		*bool `json:"report"`
+	StartTime string
+	EndTime string
 	Targets        []User
 	*TemplateFields
 }
@@ -56,6 +59,7 @@ var (
 		SMTPConfig:     flag.String("smtpConfig", "conf/smtp.conf", "SMTP config file"),
 		Subject:        flag.String("subject", "Mail Subject", "Subject that will be used for emails"),
 		From:           flag.String("from", "", "From field for an email. If not provided, will be the same as attackerName"),
+		Report: flag.Bool("report", true, "Create report"),
 	}
 	s        = TemplateFields{}
 	csvLines [][]string
@@ -65,7 +69,7 @@ var (
 var SMTPServer *email.SMTP
 
 // ParseConfiguration is the main function that will be called from main binary to initialize all flags and parse all config files.
-func ParseConfiguration() *Options {
+func ParseConfiguration(ctime string) *Options {
 	SMTPServer = &email.SMTP{}
 
 	flag.StringVar(&s.Name, "templateName", "", "Email template name")
@@ -76,6 +80,8 @@ func ParseConfiguration() *Options {
 	flag.Parse()
 
 	options.TemplateFields = &s
+
+	options.StartTime = ctime
 
 	// If JSON config file is in use
 	if *options.ConfigFile != "" {
@@ -123,13 +129,13 @@ ParseTemplate is method that for each target creates an email body.
 First parameter it returns are slice of targets emails.
 Second parameter are slices of email bodies for each user.
 */
-func (c *Options) ParseTemplate() ([]string, []string) {
+func (c *Options) ParseTemplate() ([]string, []string, []string) {
 	t, err := template.ParseFiles(*c.TemplateName)
 	if err != nil {
 		log.Fatalf("Error parsing template: %v\n", err)
 	}
 
-	var to, bodies []string
+	var names, to, bodies []string
 
 	for _, user := range c.Targets {
 		var buf bytes.Buffer
@@ -140,11 +146,12 @@ func (c *Options) ParseTemplate() ([]string, []string) {
 			Custom:       c.TemplateFields.Custom,
 		}
 		_ = t.Execute(&buf, tData)
+		names = append(names, user.Name)
 		to = append(to, user.Email)
 		bodies = append(bodies, buf.String())
 	}
 
-	return to, bodies
+	return names, to, bodies
 }
 
 func (c *Options) parseSMTP() {

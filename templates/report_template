@@ -1,0 +1,18 @@
+Start time:     {{ .StartTime }}
+End time:       {{ .EndTime }}
+
+Mail data:
+========================================
+Mail Subject: {{ .Subject }}
+From field: {{ .From }}
+AttackerName: {{ .AttackerName }}
+URL: {{ .URL }}
+Custom: {{ .Custom }}
+
+Targets:
+========================================
+Total: {{ len .Targets }}
+Table in format NAME, EMAIL, URL
+----------------------------------------{{ range .Targets }}
+{{ .Name | printf "%-20s"}} | {{ .Email | printf "%-50s"}} | {{ .URL }}
+{{end}}

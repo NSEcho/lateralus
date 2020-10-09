@@ -20,6 +20,9 @@ func WriteToFile(user, url []string) {
 		log.Fatalf("Error creating file: %v\n", err)
 	}
 	defer f.Close()
+
+	// Write header
+	fmt.Fprintf(f, "%s,%s\n", "Name", "Link sent")
 	for i := range user {
 		fmt.Fprintf(f, "%s,%s\n", user[i], url[i])
 	}

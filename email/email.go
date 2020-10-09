@@ -5,6 +5,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	mail "github.com/xhit/go-simple-mail/v2"
 	"time"
+	"strings"
 )
 
 // SMTP struct SMTP server configuration
@@ -18,7 +19,7 @@ type SMTP struct {
 }
 
 // SendMails method sends mails to targets
-func (m *SMTP) SendMails(to, bodies []string, attackerName, subject string) {
+func (m *SMTP) SendMails(names, to, bodies []string, attackerName, subject string) {
 	client := mail.NewSMTPClient()
 
 	client.Host = m.Host
@@ -73,7 +74,7 @@ func (m *SMTP) SendMails(to, bodies []string, attackerName, subject string) {
 		if err != nil {
 			log.Fatalf("Error sending mail: %v\n", err)
 		} else {
-			log.Infof("Email sent to %s\n", to[i])
+			log.Infof("Email sent to %s <%s>\n", names[i], strings.TrimSpace(to[i]))
 		}
 	}
 }
