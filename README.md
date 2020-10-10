@@ -32,8 +32,14 @@ Usage of ./lateralus:
     	If set to true, parameter url needs to have <CHANGE> part
   -generateLength int
     	Length of variable part of url with maximum of 36 (default 8)
+  -parseMdl string
+    	Path to Modlishka control db file
+  -priority string
+    	priority to send email, can be low or high (default "low")
   -report string
     	Report name
+  -signature string
+    	path to signature .html file
   -singleUrl
     	Use the same URL for all targets (default true)
   -smtpConfig string

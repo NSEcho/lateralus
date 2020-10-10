@@ -4,18 +4,21 @@ import (
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	mail "github.com/xhit/go-simple-mail/v2"
+	"io/ioutil"
 	"strings"
 	"time"
 )
 
 // SMTP struct SMTP server configuration
 type SMTP struct {
-	Host     string `json:"host"`
-	Port     int    `json:"port"`
-	Username string `json:"username"`
-	Password string `json:"password"`
-	SSL      bool   `json:"useSsl"`
-	TLS      bool   `json:"useTls"`
+	Host      string `json:"host"`
+	Port      int    `json:"port"`
+	Username  string `json:"username"`
+	Password  string `json:"password"`
+	SSL       bool   `json:"useSsl"`
+	TLS       bool   `json:"useTls"`
+	Priority  string
+	Signature string
 }
 
 // SendMails method sends mails to targets
@@ -63,10 +66,22 @@ func (m *SMTP) SendMails(names, to, bodies []string, attackerName, subject strin
 
 		//Get from each mail
 		email.GetFrom()
-		email.SetBody(mail.TextPlain, bodies[i])
 
-		//Send with high priority
-		email.SetPriority(mail.PriorityHigh)
+		// Set priority
+		if m.Priority == "high" {
+			email.SetPriority(mail.PriorityHigh)
+		} else {
+			email.SetPriority(mail.PriorityLow)
+		}
+
+		// If signature file is passed
+		if m.Signature != "" {
+			sig, err := ioutil.ReadFile(m.Signature)
+			if err != nil {
+				log.Fatalf("Error opening signature file: %v\n", err)
+			}
+			email.SetBody(mail.TextHTML, bodies[i]+string(sig))
+		}
 
 		//Pass the client to the email message to send it
 		err := email.Send(smtpClient)

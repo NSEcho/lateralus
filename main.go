@@ -47,6 +47,7 @@ func main() {
 	startTime := time.Now().Format("01-02-2006 15:04:05")
 
 	cfg := config.ParseConfiguration(startTime)
+
 	initLogging()
 	log.Info("lateralus started")
 
@@ -59,11 +60,12 @@ func main() {
 	config.SMTPServer.SendMails(names, to, bodies, *cfg.From, *cfg.Subject, *cfg.Delay)
 
 	// Write to file
-	var users, urls []string
+	var users, emails, urls []string
 	for _, user := range cfg.Targets {
 		users = append(users, user.Name)
 		urls = append(urls, user.URL)
+		emails = append(emails, user.Email)
 	}
 	createReport(cfg)
-	util.WriteToFile(users, urls)
+	util.WriteToFile(users, emails, urls)
 }

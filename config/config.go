@@ -43,6 +43,9 @@ type Options struct {
 	From           *string `json:"from"`
 	ReportName     *string `json:"report"`
 	Delay          *int    `json:"delay"`
+	Parse          *string `json:"parseMdl"`
+	Priority       *string `json:"priority"`
+	Signature      *string `json:"signature"`
 	StartTime      string
 	EndTime        string
 	Targets        []User
@@ -62,6 +65,9 @@ var (
 		From:           flag.String("from", "", "From field for an email. If not provided, will be the same as attackerName"),
 		ReportName:     flag.String("report", "", "Report name"),
 		Delay:          flag.Int("delay", 0, "delay between sending mails in seconds"),
+		Parse:          flag.String("parseMdl", "", "Path to Modlishka control db file"),
+		Priority:       flag.String("priority", "low", "priority to send email, can be low or high"),
+		Signature:      flag.String("signature", "", "path to signature .html file"),
 	}
 	s        = TemplateFields{}
 	csvLines [][]string
@@ -88,6 +94,11 @@ func ParseConfiguration(ctime string) *Options {
 	// If JSON config file is in use
 	if *options.ConfigFile != "" {
 		options.parseJSON(*options.ConfigFile)
+	}
+
+	if *options.Parse != "" {
+		util.ParseModlishka(*options.Parse)
+		os.Exit(1)
 	}
 
 	/*if *options.From == "" {
@@ -169,6 +180,8 @@ func (c *Options) parseSMTP() {
 			log.Fatalf("Error parsing SMTP configuration %v\n", err)
 		}
 	}
+	SMTPServer.Priority = *c.Priority
+	SMTPServer.Signature = *c.Signature
 }
 
 func (c *Options) parseJSON(file string) {
