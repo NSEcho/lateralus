@@ -4,8 +4,8 @@ import (
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	mail "github.com/xhit/go-simple-mail/v2"
-	"time"
 	"strings"
+	"time"
 )
 
 // SMTP struct SMTP server configuration
@@ -19,7 +19,7 @@ type SMTP struct {
 }
 
 // SendMails method sends mails to targets
-func (m *SMTP) SendMails(names, to, bodies []string, attackerName, subject string) {
+func (m *SMTP) SendMails(names, to, bodies []string, attackerName, subject string, delay int) {
 	client := mail.NewSMTPClient()
 
 	client.Host = m.Host
@@ -75,6 +75,11 @@ func (m *SMTP) SendMails(names, to, bodies []string, attackerName, subject strin
 			log.Fatalf("Error sending mail: %v\n", err)
 		} else {
 			log.Infof("Email sent to %s <%s>\n", names[i], strings.TrimSpace(to[i]))
+		}
+		// If we need to sleep and it is not last item in targets
+		if delay > 0 && i != len(to)-1 {
+			log.Infof("Sleeping for %d\n", delay)
+			time.Sleep(time.Duration(delay) * time.Second)
 		}
 	}
 }

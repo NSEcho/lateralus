@@ -41,9 +41,10 @@ type Options struct {
 	SMTPConfig     *string `json:"smtpconfig"`
 	Subject        *string `json:"subject"`
 	From           *string `json:"from"`
-	Report		*bool `json:"report"`
-	StartTime string
-	EndTime string
+	ReportName     *string `json:"report"`
+	Delay          *int    `json:"delay"`
+	StartTime      string
+	EndTime        string
 	Targets        []User
 	*TemplateFields
 }
@@ -59,7 +60,8 @@ var (
 		SMTPConfig:     flag.String("smtpConfig", "conf/smtp.conf", "SMTP config file"),
 		Subject:        flag.String("subject", "Mail Subject", "Subject that will be used for emails"),
 		From:           flag.String("from", "", "From field for an email. If not provided, will be the same as attackerName"),
-		Report: flag.Bool("report", true, "Create report"),
+		ReportName:     flag.String("report", "", "Report name"),
+		Delay:          flag.Int("delay", 0, "delay between sending mails in seconds"),
 	}
 	s        = TemplateFields{}
 	csvLines [][]string

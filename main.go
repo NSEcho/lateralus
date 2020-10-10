@@ -25,7 +25,12 @@ func createReport(cfg *config.Options) {
 		log.Fatalf("Error parsing template: %v\n", err)
 	}
 
-	reportName := "report_" + endTime + ".txt"
+	var reportName string
+	if *cfg.ReportName == "" {
+		reportName = "report_" + endTime + ".txt"
+	} else {
+		reportName = *cfg.ReportName
+	}
 	file, err := os.Create(reportName)
 	if err != nil {
 		log.Fatalf("Error creating report time: %v\n", err)
@@ -40,9 +45,10 @@ func createReport(cfg *config.Options) {
 
 func main() {
 	startTime := time.Now().Format("01-02-2006 15:04:05")
+
+	cfg := config.ParseConfiguration(startTime)
 	initLogging()
 	log.Info("lateralus started")
-	cfg := config.ParseConfiguration(startTime)
 
 	log.Infof("Generating uuids for %d users with uuid length: %d\n", len(cfg.Targets), *cfg.GenerateLength)
 
@@ -50,7 +56,7 @@ func main() {
 	names, to, bodies := cfg.ParseTemplate()
 
 	// Send emails
-	config.SMTPServer.SendMails(names, to, bodies, *cfg.From, *cfg.Subject)
+	config.SMTPServer.SendMails(names, to, bodies, *cfg.From, *cfg.Subject, *cfg.Delay)
 
 	// Write to file
 	var users, urls []string

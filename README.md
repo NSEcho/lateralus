@@ -17,6 +17,37 @@ $ git clone https://github.com/XdaemonX/lateralus.git
 $ cd lateralus/
 $ go build
 $ ./lateralus -help
+Usage of ./lateralus:
+  -attackerName string
+    	Attacker name to use in template
+  -config string
+    	Config file to read parameters from
+  -custom string
+    	Custom words to include in template
+  -delay int
+    	delay between sending mails in seconds
+  -from string
+    	From field for an email. If not provided, will be the same as attackerName
+  -generate
+    	If set to true, parameter url needs to have <CHANGE> part
+  -generateLength int
+    	Length of variable part of url with maximum of 36 (default 8)
+  -report string
+    	Report name
+  -singleUrl
+    	Use the same URL for all targets (default true)
+  -smtpConfig string
+    	SMTP config file (default "conf/smtp.conf")
+  -subject string
+    	Subject that will be used for emails (default "Mail Subject")
+  -targets string
+    	File consisting of targets data (name, lastname, email, url)
+  -template string
+    	Email template from templates/ directory
+  -templateName string
+    	Email template name
+  -url string
+    	Single url to include in emails
 ```
 
 ## Setting up
