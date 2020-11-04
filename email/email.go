@@ -74,13 +74,15 @@ func (m *SMTP) SendMails(names, to, bodies []string, attackerName, subject strin
 			email.SetPriority(mail.PriorityLow)
 		}
 
-		// If signature file is passed
+		// If signature file is passed (template file should be in html)
 		if m.Signature != "" {
 			sig, err := ioutil.ReadFile(m.Signature)
 			if err != nil {
 				log.Fatalf("Error opening signature file: %v\n", err)
 			}
 			email.SetBody(mail.TextHTML, bodies[i]+string(sig))
+		} else { // Signature is not passed, treat template as regular text file
+			email.SetBody(mail.TextPlain, bodies[i])
 		}
 
 		//Pass the client to the email message to send it
