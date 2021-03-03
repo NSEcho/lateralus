@@ -5,14 +5,14 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"flag"
-	"github.com/XdaemonX/lateralus/email"
+	"github.com/lateralusd/lateralus/email"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"os"
 	"strings"
 	"text/template"
 
-	"github.com/XdaemonX/lateralus/util"
+	"github.com/lateralusd/lateralus/util"
 )
 
 // TemplateFields keep fields that will be used in templates

@@ -13,7 +13,7 @@ Steps to get it working:
 ## Installation
 
 ```
-$ git clone https://github.com/XdaemonX/lateralus.git
+$ git clone https://github.com/lateralusd/lateralus.git
 $ cd lateralus/
 $ go build
 $ ./lateralus -help

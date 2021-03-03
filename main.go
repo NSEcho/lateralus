@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/XdaemonX/lateralus/config"
-	"github.com/XdaemonX/lateralus/util"
+	"github.com/lateralusd/lateralus/config"
+	"github.com/lateralusd/lateralus/util"
 	log "github.com/sirupsen/logrus"
 	"os"
 	"text/template"
