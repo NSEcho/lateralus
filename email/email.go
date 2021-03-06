@@ -23,7 +23,7 @@ type SMTP struct {
 	Signature string
 }
 
-var barTmpl = `{{ green "Sending mails:" }} {{ counters .}} {{ bar . "[" "=" (cycle . "=>") "_" "]"}} {{speed . | green }} {{percent . | blue}}`
+var barTmpl = `{{ green "Sending mails:" }} {{ counters .}} {{ bar . "[" "=" (cycle . "=>") "_" "]"}} {{speed . "%s mail/s" | green }} {{percent . | blue}}`
 
 // SendMails method sends mails to targets
 func (m *SMTP) SendMails(names, to, bodies []string, attackerName, subject string, delay int) {
