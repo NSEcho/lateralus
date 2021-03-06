@@ -2,11 +2,13 @@ package email
 
 import (
 	"fmt"
+	"io/ioutil"
+	"time"
+
 	log "github.com/sirupsen/logrus"
 	mail "github.com/xhit/go-simple-mail/v2"
-	"io/ioutil"
-	"strings"
-	"time"
+
+	"github.com/cheggaaa/pb/v3"
 )
 
 // SMTP struct SMTP server configuration
@@ -20,6 +22,8 @@ type SMTP struct {
 	Priority  string
 	Signature string
 }
+
+var barTmpl = `{{ green "Sending mails:" }} {{ counters .}} {{ bar . "[" "=" (cycle . "=>") "_" "]"}} {{speed . | green }} {{percent . | blue}}`
 
 // SendMails method sends mails to targets
 func (m *SMTP) SendMails(names, to, bodies []string, attackerName, subject string, delay int) {
@@ -55,7 +59,13 @@ func (m *SMTP) SendMails(names, to, bodies []string, attackerName, subject strin
 		log.Fatalf("Error creating SMTP client: %v\n", err)
 	}
 
+	log.Info("Sending mails")
+
+	bar := pb.ProgressBarTemplate(barTmpl).Start64(int64(len(to)))
+	//bar := pb.StartNew(len(to))
+
 	for i := range to {
+		bar.Increment()
 		email := mail.NewMSG()
 
 		from := fmt.Sprintf("%s <%s>", attackerName, m.Username)
@@ -63,9 +73,6 @@ func (m *SMTP) SendMails(names, to, bodies []string, attackerName, subject strin
 		email.SetFrom(from).
 			AddTo(to[i]).
 			SetSubject(subject)
-
-		//Get from each mail
-		email.GetFrom()
 
 		// Set priority
 		if m.Priority == "high" {
@@ -90,8 +97,6 @@ func (m *SMTP) SendMails(names, to, bodies []string, attackerName, subject strin
 
 		if err != nil {
 			log.Fatalf("Error sending mail: %v\n", err)
-		} else {
-			log.Infof("Email sent to %s <%s>\n", names[i], strings.TrimSpace(to[i]))
 		}
 		// If we need to sleep and it is not last item in targets
 		if delay > 0 && i != len(to)-1 {

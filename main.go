@@ -1,12 +1,13 @@
 package main
 
 import (
-	"github.com/lateralusd/lateralus/config"
-	"github.com/lateralusd/lateralus/util"
-	log "github.com/sirupsen/logrus"
 	"os"
 	"text/template"
 	"time"
+
+	"github.com/lateralusd/lateralus/config"
+	"github.com/lateralusd/lateralus/util"
+	log "github.com/sirupsen/logrus"
 )
 
 func initLogging() {
