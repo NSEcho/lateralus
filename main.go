@@ -47,7 +47,10 @@ func createReport(cfg *config.Options) {
 func main() {
 	startTime := time.Now().Format("01-02-2006 15:04:05")
 
-	cfg := config.ParseConfiguration(startTime)
+	cfg, err := config.ParseConfiguration(startTime)
+	if err != nil {
+		log.Fatalf("Error parsing configuration: %v\n", err)
+	}
 
 	initLogging()
 	log.Info("lateralus started")
@@ -55,7 +58,10 @@ func main() {
 	log.Infof("Generating uuids for %d users with uuid length: %d\n", len(cfg.Targets), *cfg.GenerateLength)
 
 	// Parsing email template
-	names, to, bodies := cfg.ParseTemplate()
+	names, to, bodies, err := cfg.ParseTemplate()
+	if err != nil {
+		log.Fatalf("Error parsing template: %v\n", err)
+	}
 
 	// Send emails
 	config.SMTPServer.SendMails(names, to, bodies, *cfg.From, *cfg.Subject, *cfg.Delay)

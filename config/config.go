@@ -5,12 +5,14 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"flag"
-	"github.com/lateralusd/lateralus/email"
-	log "github.com/sirupsen/logrus"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
 	"text/template"
+
+	"github.com/lateralusd/lateralus/email"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/lateralusd/lateralus/util"
 )
@@ -77,7 +79,7 @@ var (
 var SMTPServer *email.SMTP
 
 // ParseConfiguration is the main function that will be called from main binary to initialize all flags and parse all config files.
-func ParseConfiguration(ctime string) *Options {
+func ParseConfiguration(ctime string) (*Options, error) {
 	SMTPServer = &email.SMTP{}
 
 	flag.StringVar(&s.Name, "templateName", "", "Email template name")
@@ -100,10 +102,6 @@ func ParseConfiguration(ctime string) *Options {
 		util.ParseModlishka(*options.Parse)
 		os.Exit(1)
 	}
-
-	/*if *options.From == "" {
-		*options.From = options.AttackerName
-	}*/
 
 	// Parse targets from csv file
 	parseCSV(*options.TargetsFile)
@@ -134,7 +132,7 @@ func ParseConfiguration(ctime string) *Options {
 	// Parse smtp configuration
 	options.parseSMTP()
 
-	return &options
+	return &options, nil
 }
 
 /*
@@ -142,10 +140,10 @@ ParseTemplate is method that for each target creates an email body.
 First parameter it returns are slice of targets emails.
 Second parameter are slices of email bodies for each user.
 */
-func (c *Options) ParseTemplate() ([]string, []string, []string) {
+func (c *Options) ParseTemplate() ([]string, []string, []string, error) {
 	t, err := template.ParseFiles(*c.TemplateName)
 	if err != nil {
-		log.Fatalf("Error parsing template: %v\n", err)
+		return nil, nil, nil, fmt.Errorf("ParseTemplate: %v", err)
 	}
 
 	var names, to, bodies []string
@@ -164,59 +162,65 @@ func (c *Options) ParseTemplate() ([]string, []string, []string) {
 		bodies = append(bodies, buf.String())
 	}
 
-	return names, to, bodies
+	return names, to, bodies, nil
 }
 
-func (c *Options) parseSMTP() {
+func (c *Options) parseSMTP() error {
 	if len(*c.SMTPConfig) > 1 {
 		file, err := os.Open(*options.SMTPConfig)
 		defer file.Close()
 		data, _ := ioutil.ReadAll(file)
 		if err != nil {
-			log.Fatalf("Error opening SMTP config file %s: %v\n", *options.SMTPConfig, err)
+			return fmt.Errorf("parseSMTP: %v", err)
 		}
 		err = json.Unmarshal(data, SMTPServer)
 		if err != nil {
-			log.Fatalf("Error parsing SMTP configuration %v\n", err)
+			return fmt.Errorf("parseSMTP: %v", err)
 		}
 	}
 	SMTPServer.Priority = *c.Priority
 	SMTPServer.Signature = *c.Signature
+
+	return nil
 }
 
-func (c *Options) parseJSON(file string) {
+func (c *Options) parseJSON(file string) error {
 	ct, err := os.Open(file)
 	defer ct.Close()
 	if err != nil {
-		log.Fatalf("Error opening JSON configuration (%s): %s . Terminating.", file, err)
+		return fmt.Errorf("parseJSON: %v", err)
 	}
 
 	ctb, _ := ioutil.ReadAll(ct)
 	err = json.Unmarshal(ctb, &c)
 	if err != nil {
-		log.Fatalf("Error unmarshalling JSON configuration (%s): %s . Terminating.", file, err)
+		return fmt.Errorf("parseJSON: %v", err)
 	}
 
 	err = json.Unmarshal(ctb, &s)
 	if err != nil {
-		log.Fatalf("Error unmarshalling JSON configuration (%s): %s . Terminating.", file, err)
+		return fmt.Errorf("parseJSON: %v", err)
 	}
 
 	options.TemplateFields = &s
+
+	return nil
 }
 
-func parseCSV(file string) {
+func parseCSV(file string) error {
 	f, err := os.Open(file)
 	if err != nil {
-		log.Fatalf("Error opening target file %s: %v\n", file, err)
+		return fmt.Errorf("parseCSV: %v", err)
 	}
 
 	csvLines, err = csv.NewReader(f).ReadAll()
 	if err != nil {
-		log.Fatalf("Error reading CSV file: %v\n", err)
+		return fmt.Errorf("parseCSV: %v", err)
 	}
 
 	for _, line := range csvLines {
 		options.Targets = append(options.Targets, User{Name: line[0], Email: line[1], URL: ""})
 	}
+
+	return nil
 }
