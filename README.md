@@ -179,14 +179,13 @@ File _conf/config.json_:
 You can either call lateralus with passing all the flags you need, or you can just pass `-config` parameter with path to your json configuration file.
 
 Let's run it now.
-```
+```bash
 $ lateralus -config conf/config.json
-INFO[08.10.2020 13:39:03] lateralus started
-INFO[08.10.2020 13:39:03] Read 3 targets from targets.csv
-INFO[08.10.2020 13:39:03] Generating uuids for 3 users with uuid length: 10
-INFO[08.10.2020 13:41:03] Email sent to test@gmail.com
-INFO[08.10.2020 13:42:03] Email sent to test@gmail.com
-INFO[08.10.2020 13:43:03] Email sent to test@gmail.com
+INFO[0000] Read 3 targets from targets.csv
+INFO[26.04.2021 00:40:39] lateralus started
+INFO[26.04.2021 00:40:39] Generating uuids for 3 users with uuid length: 36
+INFO[26.04.2021 00:40:39] Sending mails
+Sending mails: 3 / 3 [============================================================================================================================================>] 2 mail/s 100.00%INFO[26.04.2021 00:43:39] Report created at report_04-26-2021 00:39:43.txt
 ```
 
 If we check inbox of user test@gmail.com, we can see that email has been sent.
