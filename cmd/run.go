@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/lateralusd/lateralus/logging"
+	"github.com/lateralusd/lateralus/util"
 	"github.com/spf13/cobra"
 	mail "github.com/xhit/go-simple-mail/v2"
 	"gopkg.in/yaml.v2"
@@ -210,7 +211,7 @@ func prepareTemplates(targets []Target, opts *Options) ([]SendingMail, error) {
 		var buf bytes.Buffer
 		m := SendingMail{
 			AttackerName: opts.Mail.Name,
-			URL:          opts.Url.Link,
+			URL:          createUserURL(opts),
 			Custom:       opts.Mail.Custom,
 			Target:       tgt,
 		}
@@ -313,4 +314,13 @@ func min(a, b int) int {
 		return a
 	}
 	return b
+}
+
+func createUserURL(urlOpts *Options) string {
+	confUrl := urlOpts.Url.Link
+	if !urlOpts.Url.Generate {
+		return confUrl
+	}
+	url := confUrl[:strings.Index(confUrl, "<CHANGE>")] + util.GenerateUUID(urlOpts.Url.Length)
+	return url
 }
