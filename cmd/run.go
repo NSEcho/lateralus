@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
+	"encoding/xml"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -438,5 +439,14 @@ func createJson(output string, res *Result) error {
 }
 
 func createXml(output string, res *Result) error {
+	d, err := xml.MarshalIndent(res, "", "  ")
+	if err != nil {
+		return fmt.Errorf("createXml: %v", err)
+	}
+
+	if err := ioutil.WriteFile(output, d, 0600); err != nil {
+		return fmt.Errorf("createXml: %v", err)
+	}
+
 	return nil
 }
