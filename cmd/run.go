@@ -3,8 +3,10 @@ package cmd
 import (
 	"bufio"
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"strings"
 	"text/template"
@@ -51,17 +53,17 @@ var runCmd = &cobra.Command{
 			logging.Fatalf("Error ocurred: %v", err)
 		}
 
-		if output == "" {
-			logging.Infof("Output not provided, will use default output (Subject_startTime)")
-		}
-
 		logging.Infof("Parsing config from \"%s\"", config)
 		opts, err := parseConfig(config)
 		if err != nil {
 			logging.Fatalf("Error parsing configuration: %v", err)
 		}
 
-		output = strings.ReplaceAll(fmt.Sprintf("%s_%s", opts.Mail.Subject, start.Format("2006-01-02 15:04:05")), " ", "")
+		if output == "" {
+			logging.Infof("Output not provided, will use default output (Subject_startTime)")
+			output = strings.ReplaceAll(fmt.Sprintf("%s_%s", opts.Mail.Subject, start.Format("2006-01-02 15:04:05")), " ", "")
+		}
+
 		logging.Infof("Output filename will be \"%s\"", output)
 
 		logging.Infof("Parsing targets from \"%s\"", opts.Attack.Targets)
@@ -81,8 +83,28 @@ var runCmd = &cobra.Command{
 			logging.Infof("Error sending mails: %v", err)
 		}
 
-		elapsed := time.Now()
-		logging.Infof("Finished sending mails at %s (%s)", elapsed.Format("2006-01-02 15:04:05"), elapsed.Sub(start))
+		end := time.Now()
+		logging.Infof("Finished sending mails at %s (%s)", end.Format("2006-01-02 15:04:05"), end.Sub(start))
+
+		res := Result{
+			StartTime:    start.Format("2006-01-02 15:04:05"),
+			EndTime:      end.Format("2006-01-02 15:04:05"),
+			Subject:      opts.Mail.Subject,
+			From:         fmt.Sprintf("%s <%s>", opts.Mail.Name, opts.MailServer.Username),
+			AttackerName: opts.Mail.Name,
+			URL:          opts.Url.Link,
+			Custom:       opts.Mail.Custom,
+			Targets:      sendingData,
+		}
+
+		format, err := cmd.Flags().GetString("format")
+		if err != nil {
+			logging.Fatalf("Error ocurred: %v", err)
+		}
+
+		if err := createReport(output, "", format, &res); err != nil {
+			logging.Errorf("Error creating report: %v", err)
+		}
 	},
 }
 
@@ -91,6 +113,7 @@ func init() {
 	runCmd.Flags().StringP("config", "c", "", "config filename")
 	runCmd.Flags().StringP("template", "t", "", "template to use for report generation")
 	runCmd.Flags().StringP("output", "o", "", "where to store output")
+	runCmd.Flags().StringP("format", "f", "tpl", "tpl, xml, json")
 }
 
 // Options struct holds all options inside of it
@@ -323,4 +346,97 @@ func createUserURL(urlOpts *Options) string {
 	}
 	url := confUrl[:strings.Index(confUrl, "<CHANGE>")] + util.GenerateUUID(urlOpts.Url.Length)
 	return url
+}
+
+var tpl = `Start time:     {{ .StartTime }}
+End time:       {{ .EndTime }}
+
+Mail data:
+========================================
+Mail Subject: 	{{ .Subject }}
+From field: 	{{ .From }}
+AttackerName: 	{{ .AttackerName }}
+URL: 		{{ .URL }}
+Custom: 	{{ .Custom }}
+
+Targets:
+========================================
+Total: 			{{ len .Targets }}
+Table in format NAME, EMAIL, URL
+----------------------------------------{{ range .Targets }}
+{{ .Name | printf "%-20s"}} | {{ .Email | printf "%-50s"}} | {{ .URL }}
+{{end}}`
+
+type Result struct {
+	StartTime    string
+	EndTime      string
+	Subject      string
+	From         string
+	AttackerName string
+	URL          string
+	Custom       string
+	Targets      []SendingMail
+}
+
+func createReport(output, templatePath, format string, res *Result) error {
+	var err error
+	switch format {
+	case "json":
+		err = createJson(output, res)
+	case "xml":
+		err = createXml(output, res)
+	default:
+		err = createTemplate(output, templatePath, res)
+	}
+
+	if err != nil {
+		return fmt.Errorf("createReport: %v", err)
+	}
+
+	return nil
+}
+
+func createTemplate(output, templatePath string, res *Result) error {
+	var t *template.Template
+	var err error
+
+	if templatePath == "" {
+		t, err = template.New("").Parse(tpl)
+		if err != nil {
+			return fmt.Errorf("createTemplate: %v", err)
+		}
+	} else {
+		t, err = template.ParseFiles(templatePath)
+		if err != nil {
+			return fmt.Errorf("createTemplate: %v", err)
+		}
+	}
+
+	f, err := os.Create(output)
+	if err != nil {
+		return fmt.Errorf("createTemplate: %v", err)
+	}
+
+	if err := t.Execute(f, res); err != nil {
+		return fmt.Errorf("createTemplate: %v", err)
+	}
+
+	return nil
+}
+
+func createJson(output string, res *Result) error {
+	d, err := json.MarshalIndent(res, "", "  ")
+	if err != nil {
+		return fmt.Errorf("createJson: %v", err)
+	}
+
+	if err := ioutil.WriteFile(output, d, 0600); err != nil {
+		return fmt.Errorf("createJson: %v", err)
+	}
+
+	return nil
+}
+
+func createXml(output string, res *Result) error {
+	return nil
 }
