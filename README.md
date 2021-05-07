@@ -1,64 +1,25 @@
 ## What is Lateralus and why?
 
-Lateralus is tool built to help with phishing campaigns. The reason I build this is to use it in conjugtion with modlishka. I can take _trackingParam_ from [modlishka](https://github.com/drk1wi/Modlishka), and use that to generate emails with lateralus.
+Lateralus is tool built to help with phishing campaigns. It has a lot of customizable report and template injection points for your emails. It also provides integration with Modlishka result file.
+
+[![asciicast](https://asciinema.org/a/412559.svg)](https://asciinema.org/a/412559)
 
 ## How does it work?
-Steps to get it working:
-* Add email template
-* Add targets
-* Choose mode(single url for all users, or each unique)
-* Configure SMTP options
-* Launch and wait
+* Run ```lateralus generate -n config.yaml```
+* Edit `config.yaml` file to match your needs
+* Pass the `config.yaml` to `lateralus run` as `lateralus run -c config.yaml`
+* Wait
 
 ## Installation
 
-```
-$ git clone https://github.com/lateralusd/lateralus.git
-$ cd lateralus/
-$ go build
-$ ./lateralus -help
-Usage of ./lateralus:
-  -attackerName string
-    	Attacker name to use in template
-  -config string
-    	Config file to read parameters from
-  -custom string
-    	Custom words to include in template
-  -delay int
-    	delay between sending mails in seconds
-  -from string
-    	From field for an email. If not provided, will be the same as attackerName
-  -generate
-    	If set to true, parameter url needs to have <CHANGE> part
-  -generateLength int
-    	Length of variable part of url with maximum of 36 (default 8)
-  -parseMdl string
-    	Path to Modlishka control db file
-  -priority string
-    	priority to send email, can be low or high (default "low")
-  -report string
-    	Report name
-  -signature string
-    	path to signature .html file
-  -singleUrl
-    	Use the same URL for all targets (default true)
-  -smtpConfig string
-    	SMTP config file (default "conf/smtp.conf")
-  -subject string
-    	Subject that will be used for emails (default "Mail Subject")
-  -targets string
-    	File consisting of targets data (name, lastname, email, url)
-  -template string
-    	Email template from templates/ directory
-  -templateName string
-    	Email template name
-  -url string
-    	Single url to include in emails
-```
+You can install it with: `go get -u github.com/lateralusd/lateralus` or build it from sources by cloning the directory and running the `go build`.
 
 ## Setting up
 
 ### Creating template
+
+In yaml config: `template: `
+
 The first step is to create the email template which you will be sending to your targets. Possible fields inside template are
 
 * {{.Name}} - This will be substituted for target name from .csv file
@@ -76,6 +37,9 @@ Best regards,
 ```
 
 ### Creating targets
+
+In yaml config: `targets:`
+
 Targets needs to be in .csv format in format _Name_,_Email_ like so:
 ```
 John,john.doe@example.com
@@ -83,53 +47,54 @@ Alan,alan.smith@example.com
 ```
 
 ### Choosing URL mode
-If you choose to include URL inside your template, you have two options:
-1. _Single URL_ mode
-2. _Generate URL_ mode
 
-In _Single URL_ mode, every user gets the same URL inside their body email. You activate this mode by providing `-singleUrl=true` flag to lateralus.
+You have two options for URLs:
+* Single - every user get's the same url link ( when the `generate: False` inside the config file)
+* Generate - every user get's different url, with the part \<CHANGE\> inside `link:` being present (when the `generate: True` inside the config file)
 
-In _Generate URL_ mode, every user gets different URL. In order to use this mode, flag `-singleUrl` needs to be set to __false__, flag `-generate` needs to be set to __true__.  
-Inside your URL you need to add `<CHANGE>` part. This is saying which part of the url you want to change. Generate URL mode will generate this part of `-generateLength` length.
-
-For both of these modes, you need to pass `-url` parameter.
+You also have an option to provide the length of the generated part, by default it will be 10 characters long. (Configurable via `length:` in config file).
 
 #### Example
-Lets say we invoke literalus like 
-```
-lateralus \
--url https://www.example.com/?employeeID=<CHANGE> \
--singleUrl=false
--generate=true
--generateLength 10
+
+After we have configured our `.yaml` config file let's run it now.
+
+```bash
+$ cat config.yaml
+url:
+  generate: True
+  link: "https://www.google.com/?ident=<CHANGE>"
+  length: 10
+
+mail:
+  name: Attacker
+  from: Not Attacker
+  subject: Not phishing mail
+  custom: ""
+
+attack:
+  targets: targets.csv
+  template: ./templates/sample.com
+
+mailServer:
+  host: smtp.gmail.com
+  port: 587
+  username: "someusername@gmail.com"
+  password: "somePassword"
+  useSsl: False
+  useTls: True
+
+general:
+  bulk: True
+  bulkDelay: 10
+  bulkSize: 3
+  delay: 5
+  separator: ","
 ```
 
-URL that will be generated would look something like this:
-```
-https://www.example.com/?employeeID=ef4e7a4e-6
-https://www.example.com/?employeeID=c5d568e2-4
-https://www.example.com/?employeeID=727ef2df-2
-```
-
-### Configuring SMTP config file
-Pass `-smtpConfig` flag with path to .json config file. It should look like:
-```
-{
-"host": "smtp.gmail.com",
-"port": 587,
-"username": "username@gmail.com",
-"password": "yourPassword",
-"useSsl": false,
-"useTls": true
-}
-```
 
 ## Example run
-I will use two of my gmail accounts, one for sending, one for receiving. Targets file will have three targets with the same email and different name.
 
-__NOTE: I do not own accounts which are given below, they are just there to show how it should look like__
-
-File _templates/sample.com_:
+**Template:**
 ```
 Greetings {{.Name}},
 
@@ -139,53 +104,25 @@ Best regards,
 {{.AttackerName}}
 ```
 
-File _targets.csv_:
+**Targets file**:
 ```
 test,test@gmail.com
 test1,test@gmail.com
 test2,test@gmail.com
 ```
 
-File _conf/smtp.conf_:
-```
-{
-"host": "smtp.gmail.com",
-"port": 587,
-"username": "testuser@gmail.com",
-"password": "testPassword",
-"useSsl": false,
-"useTls": true
-}
-```
+### Running
 
-File _conf/config.json_:
-```
-{
-"singleUrl": false,
-"config": "",
-"template": "templates/sample.com",
-"targets": "targets.csv",
-"generateUrl": true,
-"generateLength": 10,
-"templateName": "",
-"attackerName": "Attacker Himself",
-"url": "https://www.example.com/?employeeID=<CHANGE>",
-"custom": "",
-"from": "Sample user",
-"subject": "this is test"
-}
-```
-
-You can either call lateralus with passing all the flags you need, or you can just pass `-config` parameter with path to your json configuration file.
-
-Let's run it now.
 ```bash
-$ lateralus -config conf/config.json
-INFO[0000] Read 3 targets from targets.csv
-INFO[26.04.2021 00:40:39] lateralus started
-INFO[26.04.2021 00:40:39] Generating uuids for 3 users with uuid length: 36
-INFO[26.04.2021 00:40:39] Sending mails
-Sending mails: 3 / 3 [============================================================================================================================================>] 2 mail/s 100.00%INFO[26.04.2021 00:43:39] Report created at report_04-26-2021 00:39:43.txt
+$ lateralus run -c config.yaml
+[INFO] Starting campaign at 2021-05-07 11:40:16
+[INFO] Template not provided, using default template
+[INFO] Output not provided, will use default output (Subject_startTime)
+[INFO] Parsing config from "config.yaml"
+[INFO] Output filename will be "Notphishingmail_2021-05-0711:40:16"
+[INFO] Parsing targets from "targets.csv"
+[INFO] Starting to send the mails. Hope for the best
+Sending mails: 2 / 3 [===============================================================================>_______________________________________] 1 mail/s 66.67%
 ```
 
 If we check inbox of user test@gmail.com, we can see that email has been sent.
