@@ -80,8 +80,7 @@ mailServer:
   port: 587
   username: "someusername@gmail.com"
   password: "somePassword"
-  useSsl: False
-  useTls: True
+  encryption: tls
 
 general:
   bulk: True
@@ -128,6 +127,8 @@ Sending mails: 2 / 3 [==========================================================
 If we check inbox of user test@gmail.com, we can see that email has been sent.
 
 ![Mail](mailbox.png)
+
+## Config options
 
 ## Why lateralus as a name
 I really love that album.
