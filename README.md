@@ -1,6 +1,6 @@
 ## What is Lateralus and why?
 
-Lateralus is tool built to help with phishing campaigns. It has a lot of customizable report and template injection points for your emails. It also provides integration with Modlishka result file.
+Lateralus is tool built to help with phishing campaigns. It has a lot of customizable report and template injection points for your emails. In the future it will also provide integration with Modlishka result file.
 
 [![asciicast](https://asciinema.org/a/412559.svg)](https://asciinema.org/a/412559)
 
