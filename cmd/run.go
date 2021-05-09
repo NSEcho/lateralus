@@ -142,12 +142,11 @@ type Attack struct {
 
 // MailServer struct holds information needed for mail server loging
 type MailServer struct {
-	UseSsl   bool   `yaml:"useSsl"`
-	UseTls   bool   `yaml:"useTls"`
-	Host     string `yaml:"host"`
-	Port     int    `yaml:"port"`
-	Username string `yaml:"username"`
-	Password string `yaml:"password"`
+	Encryption string `yaml:"encryption"`
+	Host       string `yaml:"host"`
+	Port       int    `yaml:"port"`
+	Username   string `yaml:"username"`
+	Password   string `yaml:"password"`
 }
 
 // Url struct holds information for mail generation
@@ -257,19 +256,12 @@ func sendEmails(mails []SendingMail, opts *Options) error {
 	client.Username = opts.MailServer.Username
 	client.Password = opts.MailServer.Password
 
-	if opts.MailServer.UseSsl && opts.MailServer.UseTls {
-		return fmt.Errorf("sendEmails: You cannot use both ssl and tls")
-	}
-
-	if opts.MailServer.UseSsl && !opts.MailServer.UseTls {
-		client.Encryption = mail.EncryptionSSL
-	}
-
-	if !opts.MailServer.UseSsl && opts.MailServer.UseTls {
+	switch opts.MailServer.Encryption {
+	case "tls":
 		client.Encryption = mail.EncryptionTLS
-	}
-
-	if !opts.MailServer.UseSsl && !opts.MailServer.UseTls {
+	case "ssl":
+		client.Encryption = mail.EncryptionSSL
+	default:
 		client.Encryption = mail.EncryptionNone
 	}
 

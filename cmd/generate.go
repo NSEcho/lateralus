@@ -27,8 +27,7 @@ mailServer:
   port: 587
   username: "testusername@gmail.com"
   password: ""
-  useSsl: false
-  useTls: false
+  encryption: tls
 
 general:
   bulk: False
