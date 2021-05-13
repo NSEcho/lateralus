@@ -60,6 +60,10 @@ var runCmd = &cobra.Command{
 			logging.Fatalf("Error parsing configuration: %v", err)
 		}
 
+		if opts.General.Bcc && opts.General.Bulk {
+			logging.Fatalf("You cannot use bcc and bulk options together")
+		}
+
 		if output == "" {
 			logging.Infof("Output not provided, will use default output (Subject_startTime)")
 			output = strings.ReplaceAll(fmt.Sprintf("%s_%s", opts.Mail.Subject, start.Format("2006-01-02 15:04:05")), " ", "")
@@ -168,6 +172,7 @@ type General struct {
 	BulkSize  int    `yaml:"bulkSize"`
 	Delay     int    `yaml:"delay"`
 	Separator string `yaml:"separator"`
+	Bcc       bool   `yaml:"bcc"`
 }
 
 type SendingMail struct {
@@ -224,24 +229,19 @@ func parseTargets(filename string, sep string) ([]Target, error) {
 }
 
 func prepareTemplates(targets []Target, opts *Options) ([]SendingMail, error) {
-	t, err := template.ParseFiles(opts.Attack.Template)
-	if err != nil {
-		return []SendingMail{}, fmt.Errorf("prepareTemplates: %v", err)
-	}
-
 	var mails []SendingMail
 	for _, tgt := range targets {
-		var buf bytes.Buffer
 		m := SendingMail{
 			AttackerName: opts.Mail.Name,
 			URL:          createUserURL(opts),
 			Custom:       opts.Mail.Custom,
 			Target:       tgt,
 		}
-		if err := t.Execute(&buf, &m); err != nil {
-			return []SendingMail{}, fmt.Errorf("prepareTemplates: for \"%+v\": %v", tgt, err)
+		body, err := parseBody(*opts, tgt.Name)
+		if err != nil {
+			return []SendingMail{}, fmt.Errorf("prepareTemplates: %v", err)
 		}
-		m.Body = buf.String()
+		m.Body = body
 		mails = append(mails, m)
 	}
 
@@ -272,16 +272,40 @@ func sendEmails(mails []SendingMail, opts *Options) error {
 
 	smtpClient, err := client.Connect()
 	if err != nil {
-		return fmt.Errorf("sendEmails: %v\n", err)
+		return fmt.Errorf("sendEmails: %v", err)
 	}
 
-	chunks := [][]SendingMail{mails}
+	defer smtpClient.Close()
+
+	email := createMail(opts.Mail.Name, opts.MailServer.Username)
+
+	if opts.General.Bcc {
+		email.AddBcc(getBcc(mails)...).
+			SetSubject(opts.Mail.Subject)
+
+		body, err := parseBody(*opts, "")
+		if err != nil {
+			return fmt.Errorf("sendEmails: %v", err)
+		}
+		email.SetBody(mail.TextHTML, body)
+
+		if err := email.Send(smtpClient); err != nil {
+			return fmt.Errorf("sendEmails: %v", err)
+		}
+
+		return nil
+	}
+
 	singleTimeout := opts.General.Delay
 	bulkTimeout := 0
+
+	var chunks [][]SendingMail
 	if opts.General.Bulk {
 		chunks = createBulks(mails, &opts.General)
 		logging.Infof("Created %d chunks with size %d", len(chunks), opts.General.BulkSize)
 		bulkTimeout = opts.General.BulkDelay
+	} else {
+		chunks = append(chunks, mails)
 	}
 
 	barTmpl := `{{ green "Sending mails:" }} {{ counters .}} {{ bar . "[" "=" (cycle . "=>") "_" "]"}} {{speed . "%s mail/s" | green }} {{percent . | blue}}`
@@ -291,12 +315,8 @@ func sendEmails(mails []SendingMail, opts *Options) error {
 	for _, chunk := range chunks {
 		for _, tgt := range chunk {
 			bar.Increment()
-			email := mail.NewMSG()
 
-			from := fmt.Sprintf("%s <%s>", tgt.AttackerName, opts.MailServer.Username)
-
-			email.SetFrom(from).
-				AddTo(tgt.Email).
+			email.AddTo(tgt.Email).
 				SetSubject(opts.Mail.Subject)
 
 			email.SetBody(mail.TextHTML, tgt.Body)
@@ -311,6 +331,44 @@ func sendEmails(mails []SendingMail, opts *Options) error {
 	}
 
 	return nil
+}
+
+func parseBody(opts Options, targetName string) (string, error) {
+	t, err := template.ParseFiles(opts.Attack.Template)
+	if err != nil {
+		return "", fmt.Errorf("parseTemplate: %v", err)
+	}
+
+	data := SendingMail{
+		AttackerName: opts.Mail.Name,
+		URL:          createUserURL(&opts),
+		Custom:       opts.Mail.Custom,
+		Target: Target{
+			Name: targetName,
+		},
+	}
+
+	var buf bytes.Buffer
+	err = t.Execute(&buf, &data)
+	if err != nil {
+		return "", fmt.Errorf("parseTemplate: %v", err)
+	}
+
+	return buf.String(), nil
+}
+
+func createMail(name, username string) *mail.Email {
+	mail := mail.NewMSG()
+	mail.SetFrom(fmt.Sprintf("%s <%s>", name, username))
+	return mail
+}
+
+func getBcc(mails []SendingMail) []string {
+	targets := make([]string, len(mails))
+	for _, sMail := range mails {
+		targets = append(targets, sMail.Email)
+	}
+	return targets
 }
 
 func createBulks(targets []SendingMail, general *General) [][]SendingMail {

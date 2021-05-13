@@ -31,6 +31,7 @@ mailServer:
 
 general:
   bulk: False
+  bcc: True
   bulkDelay: 60
   bulkSize: 3
   delay: 5
