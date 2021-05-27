@@ -1,3 +1,11 @@
+# lateralus
+
+[![Latest Release](https://img.shields.io/github/release/lateralusd/lateralus.svg)](https://github.com/lateralusd/lateralus/releases)
+[![Go ReportCard](https://goreportcard.com/badge/lateralusd/lateralus)](https://goreportcard.com/report/lateralusd/lateralus)
+[![GoDoc](https://godoc.org/github.com/golang/gddo?status.svg)](https://pkg.go.dev/github.com/lateralusd/lateralus)
+
+Terminal based phishing campaign tool.
+
 ## What is Lateralus and why?
 
 Lateralus is tool built to help with phishing campaigns. It has a lot of customizable report and template injection points for your emails. In the future it will also provide integration with Modlishka result file.
