@@ -44,11 +44,11 @@ var generateCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		filename, err := cmd.Flags().GetString("name")
 		if err != nil {
-			logging.Fatalf("Error ocurred: %v", err)
+			logging.Fatalf("Error occurred: %v", err)
 		}
 		err = ioutil.WriteFile(filename, []byte(sampleConfig), 0600)
 		if err != nil {
-			logging.Fatalf("Error ocurred: %v", err)
+			logging.Fatalf("Error occurred: %v", err)
 		}
 		logging.Infof("Configuration saved in \"%s\"", filename)
 	},

@@ -4,6 +4,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// RootCmd is the main binary command
 var RootCmd = &cobra.Command{
 	Use:   "lateralus",
 	Short: "terminal-based phishing-campaing tool",

@@ -31,7 +31,7 @@ var runCmd = &cobra.Command{
 
 		config, err := cmd.Flags().GetString("config")
 		if err != nil {
-			logging.Fatalf("Error ocurred: %v", err)
+			logging.Fatalf("Error occurred: %v", err)
 		}
 
 		if config == "" {
@@ -40,7 +40,7 @@ var runCmd = &cobra.Command{
 
 		template, err := cmd.Flags().GetString("template")
 		if err != nil {
-			logging.Fatalf("Error ocurred: %v", err)
+			logging.Fatalf("Error occurred: %v", err)
 		}
 
 		if template == "" {
@@ -51,7 +51,7 @@ var runCmd = &cobra.Command{
 
 		output, err := cmd.Flags().GetString("output")
 		if err != nil {
-			logging.Fatalf("Error ocurred: %v", err)
+			logging.Fatalf("Error occurred: %v", err)
 		}
 
 		logging.Infof("Parsing config from \"%s\"", config)
@@ -104,7 +104,7 @@ var runCmd = &cobra.Command{
 
 		format, err := cmd.Flags().GetString("format")
 		if err != nil {
-			logging.Fatalf("Error ocurred: %v", err)
+			logging.Fatalf("Error occurred: %v", err)
 		}
 
 		if err := createReport(output, "", format, &res); err != nil {
@@ -160,12 +160,13 @@ type Url struct {
 	Length   int    `yaml:"length"`
 }
 
+// Target struct holds information about single target
 type Target struct {
 	Name  string
 	Email string
 }
 
-// Generator struct holds general information
+// General struct holds general information
 type General struct {
 	Bulk      bool   `yaml:"bulk"`
 	BulkDelay int    `yaml:"bulkDelay"`
@@ -175,6 +176,7 @@ type General struct {
 	Bcc       bool   `yaml:"bcc"`
 }
 
+// SendingMail struct holds all the information required to send single mail
 type SendingMail struct {
 	Target
 	Body         string
@@ -418,6 +420,7 @@ Table in format NAME, EMAIL, URL
 {{ .Name | printf "%-20s"}} | {{ .Email | printf "%-50s"}} | {{ .URL }}
 {{end}}`
 
+// Result struct holds the information that will be used to generate report
 type Result struct {
 	StartTime    string
 	EndTime      string

@@ -4,3 +4,4 @@ main
 .idea
 targets_links.csv
 report_*.txt
+dist/

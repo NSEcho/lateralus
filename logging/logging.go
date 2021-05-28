@@ -12,14 +12,17 @@ var successColor = "#00ff00"
 var errorColor = "#ff0000"
 var warningColor = "#ff0000"
 
+// Infof will log messages to os.Stdout with INFO level
 func Infof(format string, args ...interface{}) {
 	printLog("info", format, args...)
 }
 
+// Errorf will log messages to os.Stdout with ERROR level
 func Errorf(format string, args ...interface{}) {
 	printLog("error", format, args...)
 }
 
+// Fatalf will log messages to os.Stdout and will call os.Exit(1) afterwards
 func Fatalf(format string, args ...interface{}) {
 	printLog("fatal", format, args...)
 	os.Exit(1)
