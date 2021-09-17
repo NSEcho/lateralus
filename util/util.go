@@ -1,6 +1,8 @@
 package util
 
-import "github.com/google/uuid"
+import (
+	"github.com/google/uuid"
+)
 
 // GenerateUUID will be used to generate random part of url
 func GenerateUUID(length int) string {

@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/signal"
 	"strings"
 	"text/template"
 	"time"
@@ -91,6 +92,9 @@ var runCmd = &cobra.Command{
 		end := time.Now()
 		logging.Infof("Finished sending mails at %s (%s)", end.Format("2006-01-02 15:04:05"), end.Sub(start))
 
+		c := make(chan os.Signal, 1)
+		signal.Notify(c, os.Interrupt)
+
 		res := Result{
 			StartTime:    start.Format("2006-01-02 15:04:05"),
 			EndTime:      end.Format("2006-01-02 15:04:05"),
@@ -109,6 +113,13 @@ var runCmd = &cobra.Command{
 
 		if err := createReport(output, "", format, &res); err != nil {
 			logging.Errorf("Error creating report: %v", err)
+		}
+
+		for {
+			select {
+			case <-c:
+				os.Exit(1)
+			}
 		}
 	},
 }
@@ -233,13 +244,14 @@ func parseTargets(filename string, sep string) ([]Target, error) {
 func prepareTemplates(targets []Target, opts *Options) ([]SendingMail, error) {
 	var mails []SendingMail
 	for _, tgt := range targets {
+		url := createUserURL(opts)
 		m := SendingMail{
 			AttackerName: opts.Mail.Name,
-			URL:          createUserURL(opts),
+			URL:          url,
 			Custom:       opts.Mail.Custom,
 			Target:       tgt,
 		}
-		body, err := parseBody(*opts, tgt.Name)
+		body, err := parseBody(*opts, tgt.Name, url)
 		if err != nil {
 			return []SendingMail{}, fmt.Errorf("prepareTemplates: %v", err)
 		}
@@ -281,11 +293,14 @@ func sendEmails(mails []SendingMail, opts *Options) error {
 
 	email := createMail(opts.Mail.Name, opts.MailServer.Username)
 
+	email.SetPriority(mail.PriorityHigh)
+
 	if opts.General.Bcc {
+		logging.Infof("BCC is turned on")
 		email.AddBcc(getBcc(mails)...).
 			SetSubject(opts.Mail.Subject)
 
-		body, err := parseBody(*opts, "")
+		body, err := parseBody(*opts, "", "")
 		if err != nil {
 			return fmt.Errorf("sendEmails: %v", err)
 		}
@@ -310,12 +325,20 @@ func sendEmails(mails []SendingMail, opts *Options) error {
 		chunks = append(chunks, mails)
 	}
 
+	/*
+		logging.Infof("Starting the server")
+		server.StartServer(123, nil)
+	*/
+
 	barTmpl := `{{ green "Sending mails:" }} {{ counters .}} {{ bar . "[" "=" (cycle . "=>") "_" "]"}} {{speed . "%s mail/s" | green }} {{percent . | blue}}`
 
 	bar := pb.ProgressBarTemplate(barTmpl).Start64(int64(len(mails)))
 
 	for _, chunk := range chunks {
 		for _, tgt := range chunk {
+			email := createMail(opts.Mail.Name, opts.MailServer.Username)
+
+			email.SetPriority(mail.PriorityHigh)
 			bar.Increment()
 
 			email.AddTo(tgt.Email).
@@ -332,10 +355,12 @@ func sendEmails(mails []SendingMail, opts *Options) error {
 		<-time.After(time.Duration(bulkTimeout) * time.Second)
 	}
 
+	bar.Finish()
+
 	return nil
 }
 
-func parseBody(opts Options, targetName string) (string, error) {
+func parseBody(opts Options, targetName, url string) (string, error) {
 	t, err := template.ParseFiles(opts.Attack.Template)
 	if err != nil {
 		return "", fmt.Errorf("parseTemplate: %v", err)
@@ -343,8 +368,8 @@ func parseBody(opts Options, targetName string) (string, error) {
 
 	data := SendingMail{
 		AttackerName: opts.Mail.Name,
-		URL:          createUserURL(&opts),
 		Custom:       opts.Mail.Custom,
+		URL:          url,
 		Target: Target{
 			Name: targetName,
 		},

@@ -8,6 +8,7 @@ import (
 )
 
 var color = te.ColorProfile().Color
+var infoColor = "#d3d3d3"
 var successColor = "#00ff00"
 var errorColor = "#ff0000"
 var warningColor = "#ff0000"
@@ -22,10 +23,18 @@ func Errorf(format string, args ...interface{}) {
 	printLog("error", format, args...)
 }
 
+func Warningf(format string, args ...interface{}) {
+	printLog("warning", format, args...)
+}
+
 // Fatalf will log messages to os.Stdout and will call os.Exit(1) afterwards
 func Fatalf(format string, args ...interface{}) {
 	printLog("fatal", format, args...)
 	os.Exit(1)
+}
+
+func Successf(format string, args ...interface{}) {
+	printLog("success", format, args...)
 }
 
 func printLog(logType, format string, args ...interface{}) {
@@ -34,7 +43,7 @@ func printLog(logType, format string, args ...interface{}) {
 
 	switch logType {
 	case "info":
-		c = color(successColor)
+		c = color(infoColor)
 		level = "[INFO]"
 	case "warning":
 		c = color(warningColor)
@@ -45,6 +54,9 @@ func printLog(logType, format string, args ...interface{}) {
 	case "fatal":
 		c = color(errorColor)
 		level = "[FATAL]"
+	case "success":
+		c = color(successColor)
+		level = "[SUCCESS]"
 	}
 
 	levelMsg := te.String(level).Bold().Foreground(c).String()
