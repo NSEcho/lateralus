@@ -2,6 +2,8 @@ package logging
 
 import (
 	"fmt"
+	"io"
+	"log"
 	"os"
 
 	te "github.com/muesli/termenv"
@@ -12,6 +14,23 @@ var infoColor = "#d3d3d3"
 var successColor = "#00ff00"
 var errorColor = "#ff0000"
 var warningColor = "#ff0000"
+
+var f *os.File
+
+func init() {
+	f, err := os.OpenFile("lateralus.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		panic(err)
+	}
+
+	mw := io.MultiWriter(os.Stdout, f)
+	log.SetOutput(mw)
+}
+
+func WriteFile(format string, args ...interface{}) {
+	msg := fmt.Sprintf(format, args...)
+	fmt.Fprintln(f, msg)
+}
 
 // Infof will log messages to os.Stdout with INFO level
 func Infof(format string, args ...interface{}) {
@@ -61,5 +80,5 @@ func printLog(logType, format string, args ...interface{}) {
 
 	levelMsg := te.String(level).Bold().Foreground(c).String()
 	msg := te.String(fmt.Sprintf(format, args...)).Bold().Foreground(c).String()
-	fmt.Println(levelMsg, msg)
+	log.Println(levelMsg, msg)
 }
