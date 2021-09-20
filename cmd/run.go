@@ -152,8 +152,9 @@ type Mail struct {
 
 // Attack struct holds template targets and mail template used to send mails
 type Attack struct {
-	Targets  string `yaml:"targets"`
-	Template string `yaml:"template"`
+	Targets   string `yaml:"targets"`
+	Template  string `yaml:"template"`
+	Signature string `yaml:"signature"`
 }
 
 // MailServer struct holds information needed for mail server loging
@@ -252,7 +253,7 @@ func prepareTemplates(targets []Target, opts *Options) ([]SendingMail, error) {
 			Custom:       opts.Mail.Custom,
 			Target:       tgt,
 		}
-		body, err := parseBody(*opts, tgt.Name, url)
+		body, err := parseBody(*opts, tgt.Name, url, opts.Attack.Signature)
 		if err != nil {
 			return []SendingMail{}, fmt.Errorf("prepareTemplates: %v", err)
 		}
@@ -301,7 +302,7 @@ func sendEmails(mails []SendingMail, opts *Options) error {
 		email.AddBcc(getBcc(mails)...).
 			SetSubject(opts.Mail.Subject)
 
-		body, err := parseBody(*opts, "", "")
+		body, err := parseBody(*opts, "", "", opts.Attack.Signature)
 		if err != nil {
 			return fmt.Errorf("sendEmails: %v", err)
 		}
@@ -362,7 +363,7 @@ func sendEmails(mails []SendingMail, opts *Options) error {
 	return nil
 }
 
-func parseBody(opts Options, targetName, url string) (string, error) {
+func parseBody(opts Options, targetName, url, signature string) (string, error) {
 	t, err := template.ParseFiles(opts.Attack.Template)
 	if err != nil {
 		return "", fmt.Errorf("parseTemplate: %v", err)
@@ -382,6 +383,13 @@ func parseBody(opts Options, targetName, url string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("parseTemplate: %v", err)
 	}
+
+	f, err := ioutil.ReadFile(signature)
+	if err != nil {
+		return "", err
+	}
+
+	buf.Write(f)
 
 	return buf.String(), nil
 }

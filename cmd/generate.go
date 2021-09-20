@@ -21,6 +21,7 @@ mail:
 attack:
   targets: targets.csv
   template: ./template
+  signature: ./signature
   
 mailServer:
   host: smtp.gmail.com
