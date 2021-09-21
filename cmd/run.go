@@ -352,7 +352,7 @@ func sendEmails(mails []SendingMail, opts *Options) error {
 			if err != nil {
 				return fmt.Errorf("sendEmails: %v", err)
 			}
-			logging.WriteFile("Sent mail to %s => %s", tgt.Email, tgt.URL)
+			logging.Infof("Sent mail to %s => %s", tgt.Email, tgt.URL)
 			<-time.After(time.Duration(singleTimeout) * time.Second)
 		}
 		<-time.After(time.Duration(bulkTimeout) * time.Second)
