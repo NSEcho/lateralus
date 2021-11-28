@@ -62,7 +62,6 @@ type General struct {
 	BulkSize  int    `yaml:"bulkSize"`
 	Delay     int    `yaml:"delay"`
 	Separator string `yaml:"separator"`
-	Bcc       bool   `yaml:"bcc"`
 }
 
 func ParseConfig(filename string) (*Options, error) {
