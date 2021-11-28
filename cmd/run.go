@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/signal"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/lateralusd/lateralus/config"
@@ -21,6 +22,18 @@ var runCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		start := time.Now()
 		logging.Infof("Starting campaign at %s", start.Format("2006-01-02 15:04:05"))
+
+		c := make(chan os.Signal)
+		signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+
+		go func() {
+			for {
+				select {
+				case <-c:
+					os.Exit(1)
+				}
+			}
+		}()
 
 		configPath, err := cmd.Flags().GetString("config")
 		if err != nil {
