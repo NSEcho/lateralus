@@ -71,7 +71,7 @@ var runCmd = &cobra.Command{
 			output = strings.ReplaceAll(fmt.Sprintf("%s_%s", opts.Mail.Subject, start.Format("2006-01-02 15:04:05")), " ", "")
 		}
 
-		logging.Infof("Output filename will be \"%s\"", output)
+		logging.Infof("Output filename will be \"%s.rep\"", output)
 
 		logging.Infof("Parsing targets from \"%s\"", opts.Attack.Targets)
 		targets, err := opts.ParseTargets()

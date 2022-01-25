@@ -63,7 +63,9 @@ func createOutput(filename, outputType string, res *models.Result) error {
 		return fmt.Errorf("createOutput: %v", err)
 	}
 
-	if err := ioutil.WriteFile(filename, data, 0600); err != nil {
+	file := filename + ".rep"
+
+	if err := ioutil.WriteFile(file, data, 0600); err != nil {
 		return fmt.Errorf("createOutput: %v", err)
 	}
 
@@ -86,7 +88,9 @@ func createTemplate(filename, templatePath string, res *models.Result) error {
 		}
 	}
 
-	f, err := os.Create(filename)
+	file := filename + ".rep"
+
+	f, err := os.Create(file)
 	if err != nil {
 		return fmt.Errorf("createTemplate: %v", err)
 	}
