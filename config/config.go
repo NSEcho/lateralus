@@ -15,6 +15,10 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+var (
+	trackingPart = `<img src="%s/?id=%s" style="height:1px !important; width:1px !important; border: 0 !important; margin: 0 !important; padding: 0 !important" width="1" height="1" border="0">`
+)
+
 // Options struct holds all options inside of it
 type Options struct {
 	Mail       Mail       `yaml:"mail"`
@@ -117,14 +121,15 @@ func (opt Options) ParseTargets() ([]models.Target, error) {
 func (opt Options) PrepareMails(targets []models.Target) ([]models.SendingData, error) {
 	var mails []models.SendingData
 	for _, tgt := range targets {
-		url := opt.createUserURL()
+		uuid := util.GenerateUUID(opt.Url.Length)
+		url := opt.createUserURL(uuid)
 		m := models.SendingData{
 			AttackerName: opt.Mail.Name,
 			URL:          url,
 			Custom:       opt.Mail.Custom,
 			Target:       tgt,
 		}
-		body, err := opt.parseBody(tgt.Name, url)
+		body, err := opt.parseBody(tgt.Name, url, uuid)
 		if err != nil {
 			return nil, fmt.Errorf("PrepareMails: %v", err)
 		}
@@ -135,7 +140,7 @@ func (opt Options) PrepareMails(targets []models.Target) ([]models.SendingData, 
 	return mails, nil
 }
 
-func (opt Options) parseBody(targetName, url string) (string, error) {
+func (opt Options) parseBody(targetName, url, uuid string) (string, error) {
 	tPath := "templates/sample"
 	if opt.Attack.Template != "" {
 		tPath = opt.Attack.Template
@@ -171,15 +176,21 @@ func (opt Options) parseBody(targetName, url string) (string, error) {
 		buf.Write(f)
 	}
 
+	// Create tracking pixel
+	if opt.Attack.TrackingServer != "" {
+		pixel := fmt.Sprintf(trackingPart, opt.Attack.TrackingServer, uuid)
+		buf.WriteString(pixel)
+	}
+
 	return buf.String(), nil
 }
 
-func (opt Options) createUserURL() string {
+func (opt Options) createUserURL(uuid string) string {
 	confURL := opt.Url.Link
 	if !opt.Url.Generate {
 		return confURL
 	}
 
-	url := confURL[:strings.Index(confURL, "<CHANGE>")] + util.GenerateUUID(opt.Url.Length)
+	url := confURL[:strings.Index(confURL, "<CHANGE>")] + uuid
 	return url
 }
