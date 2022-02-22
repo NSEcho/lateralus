@@ -101,6 +101,10 @@ general:
 
 __NOTE:__ If you don't provide template path, `templates/sample` will be used. If you want to include signature in your emails, provide the path in `signature` inside config file.
 
+#### Tracking server
+
+For your own tracking server, you can create the simple web server which will handle get request with `id` as url param or you can use [laserver](https://github.com/lateralusd/laserver). It also supports connecting the lateralus `json` report to see exactly who has opened mail.
+
 
 ## Example run
 
