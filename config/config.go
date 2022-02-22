@@ -151,12 +151,15 @@ func (opt Options) parseBody(targetName, url string) (string, error) {
 		return "", fmt.Errorf("parseBody: %v", err)
 	}
 
-	f, err := ioutil.ReadFile(opt.Attack.Signature)
-	if err != nil {
-		return "", fmt.Errorf("parseBody: %v", err)
-	}
+	// Parse signature if provided
+	if opt.Attack.Signature != "" {
+		f, err := ioutil.ReadFile(opt.Attack.Signature)
+		if err != nil {
+			return "", fmt.Errorf("parseBody: %v", err)
+		}
 
-	buf.Write(f)
+		buf.Write(f)
+	}
 
 	return buf.String(), nil
 }
