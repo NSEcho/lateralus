@@ -106,6 +106,10 @@ func (opt Options) ParseTargets() ([]models.Target, error) {
 		}
 	}
 
+	if scanner.Err(); err != nil {
+		return nil, err
+	}
+
 	return targets, nil
 }
 
