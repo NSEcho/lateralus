@@ -1,42 +1,13 @@
 package cmd
 
 import (
-	"io/ioutil"
+	"os"
 
+	"github.com/lateralusd/lateralus/config"
 	"github.com/lateralusd/lateralus/logging"
 	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v2"
 )
-
-var sampleConfig = `url:
-  generate: True
-  link: "https://www.google.com/?ident=<CHANGE>"
-  length: 10
-  
-mail:
-  name: Attacker
-  from: Not Attacker
-  subject: Not phishing mail
-  custom: ""
-  
-attack:
-  targets: targets.csv
-  template: ./template
-  signature: ./signature
-  
-mailServer:
-  host: smtp.gmail.com
-  port: 587
-  username: "testusername@gmail.com"
-  password: ""
-  encryption: tls
-
-general:
-  bulk: False
-  bulkDelay: 60
-  bulkSize: 3
-  delay: 5
-  separator: ";"
-`
 
 var generateCmd = &cobra.Command{
 	Use:   "generate",
@@ -46,8 +17,46 @@ var generateCmd = &cobra.Command{
 		if err != nil {
 			logging.Fatalf("Error occurred: %v", err)
 		}
-		err = ioutil.WriteFile(filename, []byte(sampleConfig), 0600)
+
+		c := config.Options{
+			Url: config.Url{
+				Generate: true,
+				Link:     "https://www.google.com/?ident=<CHANGE>",
+				Length:   10,
+			},
+			Mail: config.Mail{
+				Name:    "Attacker",
+				From:    "Not Attacker",
+				Subject: "Not phishing mail",
+			},
+			Attack: config.Attack{
+				Targets:        "targets.csv",
+				Template:       "templates/sample",
+				TrackingServer: "https://10.10.10.1",
+			},
+			MailServer: config.MailServer{
+				Host:       "smtp.gmail.com",
+				Port:       587,
+				Username:   "testusername@gmail.com",
+				Password:   "testPassword",
+				Encryption: "tls",
+			},
+			General: config.General{
+				Bulk:      false,
+				BulkDelay: 60,
+				BulkSize:  3,
+				Delay:     5,
+				Separator: ",",
+			},
+		}
+
+		f, err := os.Create(filename)
 		if err != nil {
+			logging.Fatalf("Error occurred: %v", err)
+		}
+		defer f.Close()
+
+		if err := yaml.NewEncoder(f).Encode(&c); err != nil {
 			logging.Fatalf("Error occurred: %v", err)
 		}
 		logging.Infof("Configuration saved in \"%s\"", filename)

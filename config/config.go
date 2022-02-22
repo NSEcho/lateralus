@@ -34,9 +34,10 @@ type Mail struct {
 
 // Attack struct holds template targets and mail template used to send mails
 type Attack struct {
-	Targets   string `yaml:"targets"`
-	Template  string `yaml:"template"`
-	Signature string `yaml:"signature"`
+	Targets        string `yaml:"targets"`
+	Template       string `yaml:"template"`
+	Signature      string `yaml:"signature"`
+	TrackingServer string `yaml:"tracking_server"`
 }
 
 // MailServer struct holds information needed for mail server loging
