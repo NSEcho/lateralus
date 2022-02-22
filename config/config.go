@@ -131,7 +131,12 @@ func (opt Options) PrepareMails(targets []models.Target) ([]models.SendingData, 
 }
 
 func (opt Options) parseBody(targetName, url string) (string, error) {
-	t, err := template.ParseFiles(opt.Attack.Template)
+	tPath := "templates/sample"
+	if opt.Attack.Template != "" {
+		tPath = opt.Attack.Template
+	}
+
+	t, err := template.ParseFiles(tPath)
 	if err != nil {
 		return "", fmt.Errorf("parseBody: %v", err)
 	}

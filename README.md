@@ -72,17 +72,18 @@ url:
   generate: True
   link: "https://www.google.com/?ident=<CHANGE>"
   length: 10
-
+  
 mail:
   name: Attacker
   from: Not Attacker
   subject: Not phishing mail
   custom: ""
-
+  
 attack:
   targets: targets.csv
-  template: ./templates/sample.com
-
+  template: /path/to/your/template/file
+  signature: /path/to/your/signature
+  
 mailServer:
   host: smtp.gmail.com
   port: 587
@@ -91,12 +92,14 @@ mailServer:
   encryption: tls
 
 general:
-  bulk: True
-  bulkDelay: 10
+  bulk: False
+  bulkDelay: 60
   bulkSize: 3
   delay: 5
   separator: ","
 ```
+
+__NOTE:__ If you don't provide template path, `templates/sample` will be used. If you want to include signature in your emails, provide the path in `signature` inside config file.
 
 
 ## Example run
