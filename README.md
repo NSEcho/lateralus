@@ -22,6 +22,11 @@ Lateralus is tool built to help with phishing campaigns. It has a lot of customi
 
 You can install it with: `go get -u github.com/lateralusd/lateralus` or build it from sources by cloning the directory and running the `go build`.
 
+## Tracking server
+Lateralus also supports injecting the email with tracking pixel with each mail having its own distinct uuid.
+
+For your own tracking server, you can create the simple web server which will handle get request with `id` as url param or you can use [laserver](https://github.com/lateralusd/laserver). It also supports connecting the lateralus `json` report to see exactly who has opened mail.
+
 ## Setting up
 
 ### Creating template
@@ -100,10 +105,6 @@ general:
 ```
 
 __NOTE:__ If you don't provide template path, `templates/sample` will be used. If you want to include signature in your emails, provide the path in `signature` inside config file.
-
-#### Tracking server
-
-For your own tracking server, you can create the simple web server which will handle get request with `id` as url param or you can use [laserver](https://github.com/lateralusd/laserver). It also supports connecting the lateralus `json` report to see exactly who has opened mail.
 
 
 ## Example run
