@@ -97,7 +97,7 @@ var runCmd = &cobra.Command{
 			Targets:      sendingData,
 		}
 
-		if err := reports.CreateReport(output, "", format, &res); err != nil {
+		if err := reports.CreateReport(output, "", models.OutputFormat(format), &res); err != nil {
 			logging.Errorf("Error creating report: %v", err)
 		}
 	},

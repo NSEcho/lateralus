@@ -1,8 +1,10 @@
 package models
 
+type OutputFormat string
+
 const (
-	OutputTypeJSON = "json"
-	OutputTypeXML  = "xml"
+	OutputTypeJSON OutputFormat = "json"
+	OutputTypeXML  OutputFormat = "xml"
 )
 
 type Target struct {

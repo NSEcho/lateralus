@@ -31,7 +31,7 @@ Table in format NAME, EMAIL, URL
 {{end}}`
 
 // CreateReport will create report in json, xml or good ol text/template format
-func CreateReport(filename, templatePath, format string, res *models.Result) error {
+func CreateReport(filename, templatePath string, format models.OutputFormat, res *models.Result) error {
 	var err error
 	switch format {
 	case models.OutputTypeJSON:
@@ -49,7 +49,7 @@ func CreateReport(filename, templatePath, format string, res *models.Result) err
 	return nil
 }
 
-func createOutput(filename, outputType string, res *models.Result) error {
+func createOutput(filename string, outputType models.OutputFormat, res *models.Result) error {
 	var data []byte
 	var err error
 
