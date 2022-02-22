@@ -11,7 +11,7 @@ import (
 var types = []string{
 	"*.yaml",
 	"*.csv",
-	".rep",
+	"*.rep",
 }
 
 var cleanCmd = &cobra.Command{
