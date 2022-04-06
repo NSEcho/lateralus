@@ -129,7 +129,7 @@ func (opt Options) PrepareMails(targets []models.Target) ([]models.SendingData, 
 			Custom:       opt.Mail.Custom,
 			Target:       tgt,
 		}
-		body, err := opt.parseBody(tgt.Name, url, uuid)
+		body, err := opt.parseBody(tgt.Name, tgt.Email, url, uuid)
 		if err != nil {
 			return nil, fmt.Errorf("PrepareMails: %v", err)
 		}
@@ -140,7 +140,7 @@ func (opt Options) PrepareMails(targets []models.Target) ([]models.SendingData, 
 	return mails, nil
 }
 
-func (opt Options) parseBody(targetName, url, uuid string) (string, error) {
+func (opt Options) parseBody(targetName, email, url, uuid string) (string, error) {
 	tPath := "templates/sample"
 	if opt.Attack.Template != "" {
 		tPath = opt.Attack.Template
@@ -156,7 +156,8 @@ func (opt Options) parseBody(targetName, url, uuid string) (string, error) {
 		Custom:       opt.Mail.Custom,
 		URL:          url,
 		Target: models.Target{
-			Name: targetName,
+			Name:  targetName,
+			Email: email,
 		},
 	}
 

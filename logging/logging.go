@@ -27,7 +27,7 @@ func init() {
 	log.SetOutput(mw)
 }
 
-func WriteFile(format string, args ...interface{}) {
+func WriteFile(format string, args ...any) {
 	msg := fmt.Sprintf(format, args...)
 	fmt.Fprintln(f, msg)
 }

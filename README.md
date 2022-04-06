@@ -36,6 +36,7 @@ In yaml config: `template: `
 The first step is to create the email template which you will be sending to your targets. Possible fields inside template are
 
 * {{.Name}} - This will be substituted for target name from .csv file
+* {{.Email}} - This will be substituted for target email from .csv file
 * {{.URL}} - URL to include inside email
 * {{.AttackerName}} - It says it all for itself
 
