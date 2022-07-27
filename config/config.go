@@ -16,7 +16,8 @@ import (
 )
 
 var (
-	trackingPart = `<img src="%s/?id=%s" style="height:1px !important; width:1px !important; border: 0 !important; margin: 0 !important; padding: 0 !important" width="1" height="1" border="0">`
+	//trackingPart = `<img src="%s/?id=%s" style="height:1px !important; width:1px !important; border: 0 !important; margin: 0 !important; padding: 0 !important" width="1" height="1" border="0">`
+	trackingPart = `<img src="%s/?id=%s" width="1" height="1" border="0" />`
 )
 
 // Options struct holds all options inside of it
@@ -87,8 +88,8 @@ func ParseConfig(filename string) (*Options, error) {
 	return opts, nil
 }
 
-func (opt Options) ParseTargets() ([]models.Target, error) {
-	f, err := os.Open(opt.Attack.Targets)
+func (opt Options) ParseTargets(tgtFile string) ([]models.Target, error) {
+	f, err := os.Open(tgtFile)
 	if err != nil {
 		return []models.Target{}, fmt.Errorf("parseTargets: %v", err)
 	}

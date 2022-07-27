@@ -58,8 +58,18 @@ var runCmd = &cobra.Command{
 
 		logging.Infof("Output filename will be \"%s.rep\"", output)
 
-		logging.Infof("Parsing targets from \"%s\"", opts.Attack.Targets)
-		targets, err := opts.ParseTargets()
+		tgtFile, err := cmd.Flags().GetString("targets")
+		if err != nil {
+			logging.Fatalf("Error ocurred: %v", err)
+		}
+
+		tgts := opts.Attack.Targets
+		if tgtFile != "" {
+			tgts = tgtFile
+		}
+
+		logging.Infof("Parsing targets from \"%s\"", tgts)
+		targets, err := opts.ParseTargets(tgts)
 		if err != nil {
 			logging.Fatalf("Error parsing targets: %v", err)
 		}
@@ -109,4 +119,5 @@ func init() {
 	runCmd.Flags().StringP("template", "t", "", "template to use for report generation")
 	runCmd.Flags().StringP("output", "o", "", "where to store output")
 	runCmd.Flags().StringP("format", "f", "tpl", "tpl, xml, json")
+	runCmd.Flags().StringP("targets", "g", "", "targets file")
 }
